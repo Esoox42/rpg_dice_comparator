@@ -11,6 +11,7 @@ dice_statistics_ui
 │   ├── ui.py            # User interface logic
 │   ├── dice_statistics.py # Dice statistics functionality
 │   └── assets
+│       ├── icons        # dice icons
 │       └── styles.css   # CSS styles for the UI
 ├── requirements.txt      # Project dependencies
 └── README.md             # Project documentation
