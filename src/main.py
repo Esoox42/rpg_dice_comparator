@@ -1,0 +1,13 @@
+# FILE: /dice_statistics_ui/dice_statistics_ui/src/main.py
+import sys
+from PyQt5.QtWidgets import QApplication
+from ui import DiceStatisticsUI
+
+def main():
+    app = QApplication(sys.argv)
+    window = DiceStatisticsUI()
+    window.show()
+    sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
