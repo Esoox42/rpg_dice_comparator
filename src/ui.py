@@ -1,5 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QLineEdit, QPushButton, QTextEdit, QVBoxLayout
-from dice_statistics import dice_statistics, plot_histogram
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from dice_statistics import dice_statistics, parse_roll_expression
+import numpy as np
 
 class DiceStatisticsUI(QWidget):
     def __init__(self):
@@ -33,6 +36,10 @@ class DiceStatisticsUI(QWidget):
         self.output_text.setReadOnly(True)
         layout.addWidget(self.output_text)
 
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self.figure)
+        layout.addWidget(self.canvas)
+
         self.setLayout(layout)
         self.setWindowTitle("Dice Statistics Comparison")
 
@@ -50,7 +57,22 @@ class DiceStatisticsUI(QWidget):
             mean, var = dice_statistics(roll_expression)
             self.output_text.clear()
             self.output_text.append(f"{roll_expression}: Mean = {mean}, Variance = {var}")
-            plot_histogram(roll_expression)
+            self.plot_histogram(roll_expression)
         except ValueError as e:
             self.output_text.clear()
             self.output_text.append(str(e))
+
+    def plot_histogram(self, roll_expression: str, num_samples: int = 10000):
+        """Generate and display a histogram of the roll results."""
+        num_dice, num_sides, modifier = parse_roll_expression(roll_expression)
+        
+        rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(num_samples)]
+        
+        self.figure.clear()
+        ax = self.figure.add_subplot(111)
+        ax.hist(rolls, bins=range(min(rolls), max(rolls) + 2), edgecolor='black', alpha=0.75)
+        ax.set_xlabel("Roll Result")
+        ax.set_ylabel("Frequency")
+        ax.set_title(f"Histogram of {roll_expression} Rolls")
+        ax.grid(axis='y', linestyle='--', alpha=0.7)
+        self.canvas.draw()

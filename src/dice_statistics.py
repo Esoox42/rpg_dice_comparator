@@ -29,15 +29,15 @@ def dice_statistics(roll_expression: str):
     
     return expectation, variance
 
-def plot_histogram(roll_expression: str, num_samples: int = 10000):
-    """Generate and display a histogram of the roll results."""
-    num_dice, num_sides, modifier = parse_roll_expression(roll_expression)
-    
-    rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(num_samples)]
-    
-    plt.hist(rolls, bins=range(min(rolls), max(rolls) + 2), edgecolor='black', alpha=0.75)
-    plt.xlabel("Roll Result")
-    plt.ylabel("Frequency")
-    plt.title(f"Histogram of {roll_expression} Rolls")
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.show()
+#def plot_histogram(roll_expression: str, num_samples: int = 10000):
+#    """Generate and display a histogram of the roll results."""
+#    num_dice, num_sides, modifier = parse_roll_expression(roll_expression)
+#    
+#    rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(num_samples)]
+#   
+#   plt.hist(rolls, bins=range(min(rolls), max(rolls) + 2), edgecolor='black', alpha=0.75)
+#   plt.xlabel("Roll Result")
+#   plt.ylabel("Frequency")
+#   plt.title(f"Histogram of {roll_expression} Rolls")
+#   plt.grid(axis='y', linestyle='--', alpha=0.7)
+#   plt.show()
