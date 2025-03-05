@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QSpinBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -15,6 +15,14 @@ class DiceStatisticsUI(QWidget):
 
     def initUI(self):
         layout = QVBoxLayout()
+
+        self.dice_label = QLabel("Select Number of Dice:")
+        layout.addWidget(self.dice_label)
+
+        self.num_dice_spinbox = QSpinBox(self)
+        self.num_dice_spinbox.setRange(1, 100)
+        self.num_dice_spinbox.setValue(1)
+        layout.addWidget(self.num_dice_spinbox)
 
         self.dice_label = QLabel("Select Dice:")
         layout.addWidget(self.dice_label)
@@ -79,7 +87,8 @@ class DiceStatisticsUI(QWidget):
             self.output_text.append("Please select a dice.")
             return
 
-        roll_expression = '1' + self.selected_dice
+        num_dice = self.num_dice_spinbox.value()
+        roll_expression = f'{num_dice}{self.selected_dice}'
         modifier = self.modifier_input.text()
         
         # Ensure the modifier is correctly formatted
@@ -89,9 +98,9 @@ class DiceStatisticsUI(QWidget):
             roll_expression += modifier
 
         try:
-            mean, var = dice_statistics(roll_expression)
+            mean, var, min_value, max_value = dice_statistics(roll_expression)
             self.output_text.clear()
-            self.output_text.append(f"{roll_expression}: Mean = {mean}, Variance = {var}")
+            self.output_text.append(f"{roll_expression}: \nMean = {mean} \nVariance = {var} \nMin = {min_value} \nMax = {max_value}")
             self.plot_histogram(roll_expression)
         except ValueError as e:
             self.output_text.clear()
