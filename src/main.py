@@ -1,11 +1,10 @@
-# FILE: /dice_statistics_ui/dice_statistics_ui/src/main.py
 import sys
 from PyQt5.QtWidgets import QApplication
-from ui import DiceStatisticsUI
+from main_window import MainWindow
 
 def main():
     app = QApplication(sys.argv)
-    window = DiceStatisticsUI()
+    window = MainWindow()
     window.show()
     sys.exit(app.exec_())
 
