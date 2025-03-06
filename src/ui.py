@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from dice_statistics import dice_statistics, parse_roll_expression
+from custom_spinbox import CustomSpinBox
 import numpy as np
 import os
 
@@ -50,7 +51,7 @@ class DiceStatisticsUI(QWidget):
         self.modifier_label = QLabel("Enter Modifier:")
         layout.addWidget(self.modifier_label)
 
-        self.modifier_spinbox = QSpinBox(self)
+        self.modifier_spinbox = CustomSpinBox(self)
         self.modifier_spinbox.setRange(-1000000, 1000000)  # Set a very large range to simulate no limits
         self.modifier_spinbox.setValue(0)
         layout.addWidget(self.modifier_spinbox)
