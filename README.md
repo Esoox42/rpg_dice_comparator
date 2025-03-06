@@ -1,56 +1,52 @@
-# Dice Statistics UI
+# Dice Statistics Comparison UI
 
-This project provides a user interface for selecting dice and modifiers to compute and compare dice statistics. It leverages existing functionality for calculating the mean and variance of dice rolls and visualizes the results through a user-friendly interface.
+This project provides a graphical user interface (GUI) to compare the statistics of different dice rolls. The application allows users to select the number of dice, the type of dice, and a modifier, and then displays the mean, variance, minimum, and maximum values of the roll. Additionally, it generates a histogram of the roll results.
 
-## Project Structure
+## Features
 
-```
+- Select the number of dice to roll.
+- Choose from different types of dice (d4, d6, d8, d10, d12, d20).
+- Add a modifier to the roll.
+- Display the mean, variance, minimum, and maximum values of the roll.
+- Generate and display a histogram of the roll results.
+- Compare two different dice rolls side by side.
+
+## Installation
+
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/Esoox42/rpg_dice_comparator.git
+    cd rpg_dice_comparator
+    ```
+
+2. Install the required dependencies:
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+## Usage
+
+1. Navigate to the [src](http://_vscodecontentref_/1) directory:
+    ```sh
+    cd src
+    ```
+
+2. Run the application:
+    ```sh
+    python main.py
+    ```
+
+3. The application window will open, allowing you to select the number of dice, the type of dice, and a modifier for two different dice rolls. The results will be displayed side by side for comparison.
+
+## Directory Structure
 dice_statistics_ui
 ├── src
-│   ├── main.py          # Entry point for the application
-│   ├── ui.py            # User interface logic
-│   ├── dice_statistics.py # Dice statistics functionality
+│   ├── main.py            # Entry point for the application
+│   ├── ui.py              # User interface logic
+│   ├── dice_statistics.py # Dice statistics functionalities
+│   ├── main_window.py     # Manage double UI instance
 │   └── assets
-│       ├── icons        # dice icons
-│       └── styles.css   # CSS styles for the UI
-├── requirements.txt      # Project dependencies
-└── README.md             # Project documentation
-```
-
-## Setup Instructions
-
-1. **Clone the repository**:
-   ```
-   git clone <repository-url>
-   cd dice_statistics_ui
-   ```
-
-2. **Install dependencies**:
-   Create a virtual environment and install the required packages listed in `requirements.txt`:
-   ```
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   pip install -r requirements.txt
-   ```
-
-## Usage Guidelines
-
-1. Run the application:
-   ```
-   python src/main.py
-   ```
-
-2. Use the user interface to:
-   - Select the type of dice (e.g.: 1d6, 2d20).
-   - Input any modifiers (e.g.: +3, -1).
-   - Compare the outputs based on your selections.
-
-## Application Functionality
-
-- The application allows users to easily select different dice configurations and modifiers.
-- It computes the mean and variance of the selected dice rolls.
-- Users can visualize the results through histograms generated from the roll statistics.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a pull request or open an issue for any suggestions or improvements.
+│       ├── icons          # Dice icons
+│       └── styles.css     # CSS styles for the UI
+├── requirements.txt       # Project dependencies
+└── README.md              # Project documentation
