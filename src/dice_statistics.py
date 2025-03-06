@@ -26,9 +26,11 @@ def dice_statistics(roll_expression: str, advantage: bool = False, disadvantage:
             raise ValueError("Advantage roll can only be performed with 1 dice.")
         
         # Expectation (Mean) for advantage roll
+        # E[max(X1,X2)] = Σk[(k/N)^2 - (k-1/N)^2]
         expectation = sum(k * ((k / num_sides)**2 - ((k - 1) / num_sides)**2) for k in range(1, num_sides + 1)) + modifier
         
         # Variance for advantage roll
+        # Var[max(X1,X2)] = Σk^2[(k/N)^2 - (k-1/N)^2]
         mean_square = sum((k**2) * ((k / num_sides)**2 - ((k - 1) / num_sides)**2) for k in range(1, num_sides + 1))
         variance = mean_square - expectation**2
     elif disadvantage:
@@ -36,10 +38,12 @@ def dice_statistics(roll_expression: str, advantage: bool = False, disadvantage:
             raise ValueError("Disadvantage roll can only be performed with 1 dice.")
         
         # Expectation (Mean) for disadvantage roll
-        expectation = sum(k * ((num_sides - k + 1) / num_sides)**2 - ((num_sides - k) / num_sides)**2 for k in range(1, num_sides + 1)) + modifier
+        # E[max(X1,X2)] = Σk[(N-k+1/N)^2 - (N-k/N)^2]
+        expectation = sum(k * (((num_sides - k + 1) / num_sides)**2 - ((num_sides - k) / num_sides)**2) for k in range(1, num_sides + 1)) + modifier
         
         # Variance for disadvantage roll
-        mean_square = sum((k**2) * ((num_sides - k + 1) / num_sides)**2 - ((num_sides - k) / num_sides)**2 for k in range(1, num_sides + 1))
+        # Var[max(X1,X2)] = Σk^2[(N-k+1/N)^2 - (N-k/N)^2]
+        mean_square = sum((k**2) * (((num_sides - k + 1) / num_sides)**2 - ((num_sides - k) / num_sides)**2) for k in range(1, num_sides + 1))
         variance = mean_square - expectation**2
     else:
         # Expectation (Mean) formula: E[X] = (n * (s + 1)) / 2 + modifier
