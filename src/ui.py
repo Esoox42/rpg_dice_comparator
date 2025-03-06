@@ -45,7 +45,6 @@ class DiceStatisticsUI(QWidget):
 
             dice_layout.addLayout(button_layout)
             self.dice_buttons[button] = dice
-
         layout.addLayout(dice_layout)
 
         self.modifier_label = QLabel("Enter Modifier:")
@@ -55,7 +54,22 @@ class DiceStatisticsUI(QWidget):
         self.modifier_input.setText("0")
         layout.addWidget(self.modifier_input)
 
-        self.compare_button = QPushButton("Compare Outputs", self)
+        # Create a horizontal layout for advantage and disadvantage buttons
+        adv_disadv_layout = QHBoxLayout()
+
+        self.advantage_button = QPushButton("Roll with Advantage", self)
+        self.advantage_button.setCheckable(True)
+        self.advantage_button.clicked.connect(self.toggle_advantage)
+        adv_disadv_layout.addWidget(self.advantage_button)
+
+        self.disadvantage_button = QPushButton("Roll with Disadvantage", self)
+        self.disadvantage_button.setCheckable(True)
+        self.disadvantage_button.clicked.connect(self.toggle_disadvantage)
+        adv_disadv_layout.addWidget(self.disadvantage_button)
+
+        layout.addLayout(adv_disadv_layout)
+
+        self.compare_button = QPushButton("Run simulation", self)
         self.compare_button.clicked.connect(self.compare_outputs)
         layout.addWidget(self.compare_button)
 
@@ -72,6 +86,8 @@ class DiceStatisticsUI(QWidget):
 
         self.selected_dice = None
         self.selected_button = None
+        self.advantage = False
+        self.disadvantage = False
 
     def select_dice(self):
         sender = self.sender()
@@ -80,6 +96,26 @@ class DiceStatisticsUI(QWidget):
         self.selected_button = sender
         self.selected_button.setStyleSheet("background-color: lightblue;")  # Highlight the selected button
         self.selected_dice = self.dice_buttons[sender]
+
+    def toggle_advantage(self):
+        self.advantage = self.advantage_button.isChecked()
+        self.disadvantage = False
+        self.disadvantage_button.setChecked(False)
+        if self.advantage:
+            self.num_dice_spinbox.setValue(1)
+            self.num_dice_spinbox.setEnabled(False)
+        else:
+            self.num_dice_spinbox.setEnabled(True)
+
+    def toggle_disadvantage(self):
+        self.disadvantage = self.disadvantage_button.isChecked()
+        self.advantage = False
+        self.advantage_button.setChecked(False)
+        if self.disadvantage:
+            self.num_dice_spinbox.setValue(1)
+            self.num_dice_spinbox.setEnabled(False)
+        else:
+            self.num_dice_spinbox.setEnabled(True)
 
     def compare_outputs(self):
         if not self.selected_dice:
@@ -98,19 +134,24 @@ class DiceStatisticsUI(QWidget):
             roll_expression += modifier
 
         try:
-            mean, var, min_value, max_value = dice_statistics(roll_expression)
+            mean, var, min_value, max_value = dice_statistics(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
             self.output_text.clear()
-            self.output_text.append(f"{roll_expression}: \nMean = {mean} \nVariance = {var} \nMin = {min_value} \nMax = {max_value}")
-            self.plot_histogram(roll_expression)
+            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}: Mean = {mean}\n Variance = {var}\n Min = {min_value}\n Max = {max_value}")
+            self.plot_histogram(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
         except ValueError as e:
             self.output_text.clear()
             self.output_text.append(str(e))
 
-    def plot_histogram(self, roll_expression: str, num_samples: int = 10000):
+    def plot_histogram(self, roll_expression: str, num_samples: int = 10000, advantage: bool = False, disadvantage: bool = False):
         """Generate and display a histogram of the roll results."""
         num_dice, num_sides, modifier = parse_roll_expression(roll_expression)
         
-        rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(num_samples)]
+        if advantage:
+            rolls = [max(np.random.randint(1, num_sides + 1), np.random.randint(1, num_sides + 1)) + modifier for _ in range(num_samples)]
+        elif disadvantage:
+            rolls = [min(np.random.randint(1, num_sides + 1), np.random.randint(1, num_sides + 1)) + modifier for _ in range(num_samples)]
+        else:
+            rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(num_samples)]
         
         self.figure.clear()
         ax = self.figure.add_subplot(111)
