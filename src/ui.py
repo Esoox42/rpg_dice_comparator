@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QSpinBox
+from PyQt5.QtWidgets import QWidget, QLabel, QSpinBox, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -50,9 +50,10 @@ class DiceStatisticsUI(QWidget):
         self.modifier_label = QLabel("Enter Modifier:")
         layout.addWidget(self.modifier_label)
 
-        self.modifier_input = QLineEdit(self)
-        self.modifier_input.setText("0")
-        layout.addWidget(self.modifier_input)
+        self.modifier_spinbox = QSpinBox(self)
+        self.modifier_spinbox.setRange(-1000000, 1000000)  # Set a very large range to simulate no limits
+        self.modifier_spinbox.setValue(0)
+        layout.addWidget(self.modifier_spinbox)
 
         # Create a horizontal layout for advantage and disadvantage buttons
         adv_disadv_layout = QHBoxLayout()
@@ -125,13 +126,13 @@ class DiceStatisticsUI(QWidget):
 
         num_dice = self.num_dice_spinbox.value()
         roll_expression = f'{num_dice}{self.selected_dice}'
-        modifier = self.modifier_input.text()
+        modifier = self.modifier_spinbox.value()
         
         # Ensure the modifier is correctly formatted
-        if modifier:
-            if not modifier.startswith('+') and not modifier.startswith('-'):
-                modifier = '+' + modifier
-            roll_expression += modifier
+        if modifier > 0:
+            roll_expression += f'+{modifier}'
+        elif modifier < 0:
+            roll_expression += f'{modifier}'
 
         try:
             mean, var, min_value, max_value = dice_statistics(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
