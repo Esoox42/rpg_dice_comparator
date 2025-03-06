@@ -34,6 +34,7 @@ class DiceStatisticsUI(QWidget):
         for dice in dice_options:
             button_layout = QVBoxLayout()
             button = QPushButton()
+            button.setCheckable(True)
             icon_path = os.path.join(os.path.dirname(__file__), 'assets', 'icons', f'{dice}.png')
             button.setIcon(QIcon(icon_path))
             button.setIconSize(button.sizeHint())
@@ -94,9 +95,9 @@ class DiceStatisticsUI(QWidget):
     def select_dice(self):
         sender = self.sender()
         if self.selected_button:
-            self.selected_button.setStyleSheet("")  # Reset the style of the previously selected button
+            self.selected_button.setChecked(False)  # Reset the style of the previously selected button
         self.selected_button = sender
-        self.selected_button.setStyleSheet("background-color: lightblue;")  # Highlight the selected button
+        self.selected_button.setChecked(True)  # Highlight the selected button
         self.selected_dice = self.dice_buttons[sender]
 
     def toggle_advantage(self):
