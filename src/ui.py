@@ -12,6 +12,7 @@ class DiceStatisticsUI(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.num_samples = 10000  # Default number of samples
         self.initUI()
 
     def initUI(self):
@@ -145,16 +146,16 @@ class DiceStatisticsUI(QWidget):
             self.output_text.clear()
             self.output_text.append(str(e))
 
-    def plot_histogram(self, roll_expression: str, num_samples: int = 10000, advantage: bool = False, disadvantage: bool = False):
+    def plot_histogram(self, roll_expression: str, advantage: bool = False, disadvantage: bool = False):
         """Generate and display a histogram of the roll results."""
         num_dice, num_sides, modifier = parse_roll_expression(roll_expression)
         
         if advantage:
-            rolls = [max(np.random.randint(1, num_sides + 1), np.random.randint(1, num_sides + 1)) + modifier for _ in range(num_samples)]
+            rolls = [max(np.random.randint(1, num_sides + 1), np.random.randint(1, num_sides + 1)) + modifier for _ in range(self.num_samples)]
         elif disadvantage:
-            rolls = [min(np.random.randint(1, num_sides + 1), np.random.randint(1, num_sides + 1)) + modifier for _ in range(num_samples)]
+            rolls = [min(np.random.randint(1, num_sides + 1), np.random.randint(1, num_sides + 1)) + modifier for _ in range(self.num_samples)]
         else:
-            rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(num_samples)]
+            rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(self.num_samples)]
         
         self.figure.clear()
         ax = self.figure.add_subplot(111)
