@@ -7,6 +7,7 @@ This project provides a graphical user interface (GUI) to compare the statistics
 - Select the number of dice to roll.
 - Choose from different types of dice (d4, d6, d8, d10, d12, d20).
 - Add a modifier to the roll.
+- Roll using advantage/disadvantage.
 - Display the mean, variance, minimum, and maximum values of the roll.
 - Generate and display a histogram of the roll results.
 - Compare two different dice rolls side by side.
