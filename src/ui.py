@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QSpinBox, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QSpinBox, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QCheckBox, QDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -13,6 +13,7 @@ class DiceStatisticsUI(QWidget):
         super().__init__()
 
         self.num_samples = 10000  # Default number of samples
+        self.show_histogram = True  # Default to showing histogram
         self.initUI()
 
     def initUI(self):
@@ -77,6 +78,15 @@ class DiceStatisticsUI(QWidget):
         self.compare_button.clicked.connect(self.compare_outputs)
         layout.addWidget(self.compare_button)
 
+        self.options_button = QPushButton("Options", self)
+        self.options_button.setFixedWidth(100)  # Set a fixed width for the button
+        self.options_button.clicked.connect(self.open_options)
+        layout.addWidget(self.options_button)
+
+        self.toggle_plot_button = QCheckBox("Show CDF", self)
+        self.toggle_plot_button.stateChanged.connect(self.toggle_plot)
+        layout.addWidget(self.toggle_plot_button)
+
         self.output_text = QTextEdit(self)
         self.output_text.setReadOnly(True)
         layout.addWidget(self.output_text)
@@ -121,6 +131,10 @@ class DiceStatisticsUI(QWidget):
         else:
             self.num_dice_spinbox.setEnabled(True)
 
+    def toggle_plot(self, state):
+        self.show_histogram = state == Qt.Unchecked
+        self.compare_outputs()
+
     def compare_outputs(self):
         if not self.selected_dice:
             self.output_text.clear()
@@ -147,7 +161,7 @@ class DiceStatisticsUI(QWidget):
             self.output_text.append(str(e))
 
     def plot_histogram(self, roll_expression: str, advantage: bool = False, disadvantage: bool = False):
-        """Generate and display a histogram of the roll results."""
+        """Generate and display a histogram or CDF of the roll results."""
         num_dice, num_sides, modifier = parse_roll_expression(roll_expression)
         
         if advantage:
@@ -159,9 +173,25 @@ class DiceStatisticsUI(QWidget):
         
         self.figure.clear()
         ax = self.figure.add_subplot(111)
-        ax.hist(rolls, bins=range(min(rolls), max(rolls) + 2), edgecolor='black', alpha=0.75)
-        ax.set_xlabel("Roll Result")
-        ax.set_ylabel("Frequency")
-        ax.set_title(f"Histogram of {roll_expression} Rolls")
+        
+        if self.show_histogram:
+            ax.hist(rolls, bins=range(min(rolls), max(rolls) + 2), edgecolor='black', alpha=0.75)
+            ax.set_xlabel("Roll Result")
+            ax.set_ylabel("Frequency")
+            ax.set_title(f"Histogram of {roll_expression} Rolls")
+        else:
+            sorted_rolls = np.sort(rolls)
+            cdf = np.arange(1, len(sorted_rolls) + 1) / len(sorted_rolls)
+            ax.plot(sorted_rolls, cdf, linestyle='-', marker='')
+            ax.set_xlabel("Roll Result")
+            ax.set_ylabel("Cumulative Probability")
+            ax.set_title(f"CDF of {roll_expression} Rolls")
+        
         ax.grid(axis='y', linestyle='--', alpha=0.7)
         self.canvas.draw()
+
+    def open_options(self):
+        options_window = OptionsWindow(self)
+        options_window.samples_spinbox.setValue(self.num_samples)
+        if options_window.exec_() == QDialog.Accepted:
+            self.num_samples = options_window.samples_spinbox.value()
