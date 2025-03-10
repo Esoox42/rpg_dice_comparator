@@ -179,7 +179,7 @@ class DiceStatisticsUI(QWidget):
         try:
             mean, var, min_value, max_value = dice_statistics(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
             self.output_text.clear()
-            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}: Mean = {mean}\n Variance = {var}\n Min = {min_value}\n Max = {max_value}")
+            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}:\nMean = {mean}\nVariance = {var}\nMin = {min_value}\nMax = {max_value}")
             if self.dc_checkbox.isChecked():
                 dc = self.dc_spinbox.value()
                 self.plot_histogram(roll_expression, dc, advantage=self.advantage, disadvantage=self.disadvantage)

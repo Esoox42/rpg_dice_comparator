@@ -19,6 +19,12 @@ def main():
     # Number of samples
     num_samples = st.sidebar.number_input("Number of Samples", min_value=100, max_value=1000000, value=10000)
 
+    # Difficulty Class (DC)
+    enable_dc = st.sidebar.checkbox("Enable DC")
+    dc = None
+    if enable_dc:
+        dc = st.sidebar.number_input("Difficulty Class (DC)", min_value=1, max_value=1000, value=10)
+
     # Run simulation button
     if st.sidebar.button("Run Simulation"):
         roll_expression = f'{num_dice}{dice_type}'
@@ -59,6 +65,11 @@ def main():
             cdf = np.arange(1, len(sorted_rolls) + 1) / len(sorted_rolls)
             cdf_df = pd.DataFrame({"Roll Result": sorted_rolls, "CDF": cdf})
             st.line_chart(cdf_df.set_index("Roll Result"))
+
+            # Probability of Success
+            if dc is not None:
+                success_probability = np.sum(np.array(rolls) >= dc) / len(rolls) * 100
+                st.write(f"**Probability of Success (DC {dc}):** {success_probability:.2f}%")
 
         except ValueError as e:
             st.error(str(e))
