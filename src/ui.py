@@ -1,11 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QSpinBox, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QTabWidget, QDialog
+from PyQt5.QtWidgets import QWidget, QLabel, QSpinBox, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QTabWidget, QCheckBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from dice_statistics import dice_statistics, parse_roll_expression
 from custom_spinbox import CustomSpinBox
-from options_window import OptionsWindow
 import numpy as np
 import os
 
@@ -59,6 +58,21 @@ class DiceStatisticsUI(QWidget):
         self.modifier_spinbox.setValue(0)
         layout.addWidget(self.modifier_spinbox)
 
+        self.dc_checkbox = QCheckBox("Enable DC", self)
+        self.dc_checkbox.stateChanged.connect(self.toggle_dc)
+        layout.addWidget(self.dc_checkbox)
+
+        self.dc_label = QLabel("Enter Difficulty Class (DC):")
+        layout.addWidget(self.dc_label)
+
+        self.dc_spinbox = QSpinBox(self)
+        self.dc_spinbox.setRange(1, 1000)
+        self.dc_spinbox.setValue(10)
+        layout.addWidget(self.dc_spinbox)
+
+        self.dc_label.setVisible(False)
+        self.dc_spinbox.setVisible(False)
+
         # Create a horizontal layout for advantage and disadvantage buttons
         adv_disadv_layout = QHBoxLayout()
 
@@ -77,11 +91,6 @@ class DiceStatisticsUI(QWidget):
         self.compare_button = QPushButton("Run simulation", self)
         self.compare_button.clicked.connect(self.compare_outputs)
         layout.addWidget(self.compare_button)
-
-        self.options_button = QPushButton("Options", self)
-        self.options_button.setFixedWidth(100)  # Set a fixed width for the button
-        self.options_button.clicked.connect(self.open_options)
-        layout.addWidget(self.options_button)
 
         self.output_text = QTextEdit(self)
         self.output_text.setReadOnly(True)
@@ -143,6 +152,14 @@ class DiceStatisticsUI(QWidget):
         else:
             self.num_dice_spinbox.setEnabled(True)
 
+    def toggle_dc(self, state):
+        if state == Qt.Checked:
+            self.dc_label.setVisible(True)
+            self.dc_spinbox.setVisible(True)
+        else:
+            self.dc_label.setVisible(False)
+            self.dc_spinbox.setVisible(False)
+
     def compare_outputs(self):
         if not self.selected_dice:
             self.output_text.clear()
@@ -162,13 +179,17 @@ class DiceStatisticsUI(QWidget):
         try:
             mean, var, min_value, max_value = dice_statistics(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
             self.output_text.clear()
-            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}:\n Mean = {mean}\n Variance = {var}\n Min = {min_value}\n Max = {max_value}")
-            self.plot_histogram(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
+            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}: Mean = {mean}\n Variance = {var}\n Min = {min_value}\n Max = {max_value}")
+            if self.dc_checkbox.isChecked():
+                dc = self.dc_spinbox.value()
+                self.plot_histogram(roll_expression, dc, advantage=self.advantage, disadvantage=self.disadvantage)
+            else:
+                self.plot_histogram(roll_expression, None, advantage=self.advantage, disadvantage=self.disadvantage)
         except ValueError as e:
             self.output_text.clear()
             self.output_text.append(str(e))
 
-    def plot_histogram(self, roll_expression: str, advantage: bool = False, disadvantage: bool = False):
+    def plot_histogram(self, roll_expression: str, dc: int = None, advantage: bool = False, disadvantage: bool = False):
         """Generate and display a histogram or CDF of the roll results."""
         num_dice, num_sides, modifier = parse_roll_expression(roll_expression)
         
@@ -188,6 +209,11 @@ class DiceStatisticsUI(QWidget):
         ax_hist.set_ylabel("Frequency")
         ax_hist.set_title(f"Histogram of {roll_expression} Rolls")
         ax_hist.grid(axis='y', linestyle='--', alpha=0.7)
+
+        if dc is not None:
+            ax_hist.axvline(x=dc, color='r', linestyle='--', label=f'DC {dc}')
+            ax_hist.legend()
+
         self.histogram_canvas.draw()
 
         ax_cdf = self.cdf_figure.add_subplot(111)
@@ -198,10 +224,14 @@ class DiceStatisticsUI(QWidget):
         ax_cdf.set_ylabel("Cumulative Probability")
         ax_cdf.set_title(f"CDF of {roll_expression} Rolls")
         ax_cdf.grid(axis='y', linestyle='--', alpha=0.7)
+
+        if dc is not None:
+            ax_cdf.axvline(x=dc, color='r', linestyle='--', label=f'DC {dc}')
+            ax_cdf.legend()
+
         self.cdf_canvas.draw()
 
-    def open_options(self):
-        options_window = OptionsWindow(self)
-        options_window.samples_spinbox.setValue(self.num_samples)
-        if options_window.exec_() == QDialog.Accepted:
-            self.num_samples = options_window.samples_spinbox.value()
+        # Calculate and display the probability of success if DC is enabled
+        if dc is not None:
+            success_probability = np.sum(np.array(rolls) >= dc) / len(rolls) * 100
+            self.output_text.append(f"Probability of Success (DC {dc}): {success_probability:.2f}%")
