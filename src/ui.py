@@ -78,11 +78,6 @@ class DiceStatisticsUI(QWidget):
         self.compare_button.clicked.connect(self.compare_outputs)
         layout.addWidget(self.compare_button)
 
-        self.options_button = QPushButton("Options", self)
-        self.options_button.setFixedWidth(100)  # Set a fixed width for the button
-        self.options_button.clicked.connect(self.open_options)
-        layout.addWidget(self.options_button)
-
         self.toggle_plot_button = QCheckBox("Show CDF", self)
         self.toggle_plot_button.stateChanged.connect(self.toggle_plot)
         layout.addWidget(self.toggle_plot_button)
