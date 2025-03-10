@@ -5,6 +5,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from dice_statistics import dice_statistics, parse_roll_expression
 from custom_spinbox import CustomSpinBox
+from options_window import OptionsWindow
 import numpy as np
 import os
 
