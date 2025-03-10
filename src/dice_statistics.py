@@ -26,25 +26,27 @@ def dice_statistics(roll_expression: str, advantage: bool = False, disadvantage:
             raise ValueError("Advantage roll can only be performed with 1 dice.")
         
         # Expectation (Mean) for advantage roll
-        # E[max(X1,X2)] = Σk[(k/N)^2 - (k-1/N)^2]
-        expectation = sum(k * ((k / num_sides)**2 - ((k - 1) / num_sides)**2) for k in range(1, num_sides + 1)) + modifier
+        # E[max(X1,X2)] = Σk[(k/N)^2 - (k-1/N)^2] = Σk((2k-1)/N^2)
+        expectation_without_mod = sum(k * ((k / num_sides)**2 - ((k - 1) / num_sides)**2) for k in range(1, num_sides + 1))
+        expectation = expectation_without_mod + modifier
         
         # Variance for advantage roll
-        # Var[max(X1,X2)] = Σk^2[(k/N)^2 - (k-1/N)^2]
-        mean_square = sum((k**2) * ((k / num_sides)**2 - ((k - 1) / num_sides)**2) for k in range(1, num_sides + 1))
-        variance = mean_square - expectation**2
+        # Var[max(X1,X2)] = Σk^2[(k/N)^2 - (k-1/N)^2] = Σk^2((2k-1)/N^2)
+        mean_square = sum((k**2) * ((2*k - 1) / (num_sides)**2) for k in range(1, num_sides + 1))
+        variance = mean_square - expectation_without_mod**2 # Modifiers do not affect variance
     elif disadvantage:
         if num_dice != 1:
             raise ValueError("Disadvantage roll can only be performed with 1 dice.")
         
         # Expectation (Mean) for disadvantage roll
-        # E[max(X1,X2)] = Σk[(N-k+1/N)^2 - (N-k/N)^2]
-        expectation = sum(k * (((num_sides - k + 1) / num_sides)**2 - ((num_sides - k) / num_sides)**2) for k in range(1, num_sides + 1)) + modifier
-        
+        # E[max(X1,X2)] = Σk[(N-k+1/N)^2 - (N-k/N)^2] = Σk((2(N-k)+1/N^2) #doubt
+        expectation_without_mod = sum(k *  (((num_sides - k + 1) / num_sides)**2 - ((num_sides - k) / num_sides)**2) for k in range(1, num_sides + 1))
+        expectation = expectation_without_mod + modifier
+
         # Variance for disadvantage roll
-        # Var[max(X1,X2)] = Σk^2[(N-k+1/N)^2 - (N-k/N)^2]
+        # Var[max(X1,X2)] = Σk^2[(N-k+1/N)^2 - (N-k/N)^2] = Σk^2((2(N-k)+1/N^2)
         mean_square = sum((k**2) * (((num_sides - k + 1) / num_sides)**2 - ((num_sides - k) / num_sides)**2) for k in range(1, num_sides + 1))
-        variance = mean_square - expectation**2
+        variance = mean_square - expectation_without_mod**2 # Modifiers do not affect variance
     else:
         # Expectation (Mean) formula: E[X] = (n * (s + 1)) / 2 + modifier
         expectation = num_dice * (num_sides + 1) / 2 + modifier
