@@ -1,10 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QSpinBox, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QSpinBox, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QTabWidget, QDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from dice_statistics import dice_statistics, parse_roll_expression
 from custom_spinbox import CustomSpinBox
+from options_window import OptionsWindow
 import numpy as np
 import os
 
@@ -77,13 +78,34 @@ class DiceStatisticsUI(QWidget):
         self.compare_button.clicked.connect(self.compare_outputs)
         layout.addWidget(self.compare_button)
 
+        self.options_button = QPushButton("Options", self)
+        self.options_button.setFixedWidth(100)  # Set a fixed width for the button
+        self.options_button.clicked.connect(self.open_options)
+        layout.addWidget(self.options_button)
+
         self.output_text = QTextEdit(self)
         self.output_text.setReadOnly(True)
         layout.addWidget(self.output_text)
 
-        self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
-        layout.addWidget(self.canvas)
+        self.tab_widget = QTabWidget(self)
+        self.histogram_tab = QWidget()
+        self.cdf_tab = QWidget()
+
+        self.tab_widget.addTab(self.histogram_tab, "Histogram")
+        self.tab_widget.addTab(self.cdf_tab, "CDF")
+
+        layout.addWidget(self.tab_widget)
+
+        self.histogram_layout = QVBoxLayout(self.histogram_tab)
+        self.cdf_layout = QVBoxLayout(self.cdf_tab)
+
+        self.histogram_figure = Figure()
+        self.histogram_canvas = FigureCanvas(self.histogram_figure)
+        self.histogram_layout.addWidget(self.histogram_canvas)
+
+        self.cdf_figure = Figure()
+        self.cdf_canvas = FigureCanvas(self.cdf_figure)
+        self.cdf_layout.addWidget(self.cdf_canvas)
 
         self.setLayout(layout)
         self.setWindowTitle("Dice Statistics Comparison")
@@ -140,14 +162,14 @@ class DiceStatisticsUI(QWidget):
         try:
             mean, var, min_value, max_value = dice_statistics(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
             self.output_text.clear()
-            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}: Mean = {mean}\n Variance = {var}\n Min = {min_value}\n Max = {max_value}")
+            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}:\n Mean = {mean}\n Variance = {var}\n Min = {min_value}\n Max = {max_value}")
             self.plot_histogram(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
         except ValueError as e:
             self.output_text.clear()
             self.output_text.append(str(e))
 
     def plot_histogram(self, roll_expression: str, advantage: bool = False, disadvantage: bool = False):
-        """Generate and display a histogram of the roll results."""
+        """Generate and display a histogram or CDF of the roll results."""
         num_dice, num_sides, modifier = parse_roll_expression(roll_expression)
         
         if advantage:
@@ -157,11 +179,29 @@ class DiceStatisticsUI(QWidget):
         else:
             rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(self.num_samples)]
         
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
-        ax.hist(rolls, bins=range(min(rolls), max(rolls) + 2), edgecolor='black', alpha=0.75)
-        ax.set_xlabel("Roll Result")
-        ax.set_ylabel("Frequency")
-        ax.set_title(f"Histogram of {roll_expression} Rolls")
-        ax.grid(axis='y', linestyle='--', alpha=0.7)
-        self.canvas.draw()
+        self.histogram_figure.clear()
+        self.cdf_figure.clear()
+
+        ax_hist = self.histogram_figure.add_subplot(111)
+        ax_hist.hist(rolls, bins=range(min(rolls), max(rolls) + 2), edgecolor='black', alpha=0.75)
+        ax_hist.set_xlabel("Roll Result")
+        ax_hist.set_ylabel("Frequency")
+        ax_hist.set_title(f"Histogram of {roll_expression} Rolls")
+        ax_hist.grid(axis='y', linestyle='--', alpha=0.7)
+        self.histogram_canvas.draw()
+
+        ax_cdf = self.cdf_figure.add_subplot(111)
+        sorted_rolls = np.sort(rolls)
+        cdf = np.arange(1, len(sorted_rolls) + 1) / len(sorted_rolls)
+        ax_cdf.plot(sorted_rolls, cdf, linestyle='-', marker='')
+        ax_cdf.set_xlabel("Roll Result")
+        ax_cdf.set_ylabel("Cumulative Probability")
+        ax_cdf.set_title(f"CDF of {roll_expression} Rolls")
+        ax_cdf.grid(axis='y', linestyle='--', alpha=0.7)
+        self.cdf_canvas.draw()
+
+    def open_options(self):
+        options_window = OptionsWindow(self)
+        options_window.samples_spinbox.setValue(self.num_samples)
+        if options_window.exec_() == QDialog.Accepted:
+            self.num_samples = options_window.samples_spinbox.value()
