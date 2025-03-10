@@ -53,6 +53,11 @@ def main():
             else:
                 rolls = [sum(np.random.randint(1, num_sides + 1, num_dice)) + modifier for _ in range(num_samples)]
 
+            # Probability of Success
+            if dc is not None:
+                success_probability = np.sum(np.array(rolls) >= dc) / len(rolls) * 100
+                st.write(f"**Probability of Success (DC {dc}):** {success_probability:.2f}%")
+
             # Plot histogram
             st.subheader("Histogram")
             hist_values, hist_edges = np.histogram(rolls, bins=range(min(rolls), max(rolls) + 2))
@@ -65,11 +70,6 @@ def main():
             cdf = np.arange(1, len(sorted_rolls) + 1) / len(sorted_rolls)
             cdf_df = pd.DataFrame({"Roll Result": sorted_rolls, "CDF": cdf})
             st.line_chart(cdf_df.set_index("Roll Result"))
-
-            # Probability of Success
-            if dc is not None:
-                success_probability = np.sum(np.array(rolls) >= dc) / len(rolls) * 100
-                st.write(f"**Probability of Success (DC {dc}):** {success_probability:.2f}%")
 
         except ValueError as e:
             st.error(str(e))
