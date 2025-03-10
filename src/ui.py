@@ -162,7 +162,7 @@ class DiceStatisticsUI(QWidget):
         try:
             mean, var, min_value, max_value = dice_statistics(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
             self.output_text.clear()
-            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}: Mean = {mean}\n Variance = {var}\n Min = {min_value}\n Max = {max_value}")
+            self.output_text.append(f"{roll_expression}{' with Advantage' if self.advantage else ''}{' with Disadvantage' if self.disadvantage else ''}:\n Mean = {mean}\n Variance = {var}\n Min = {min_value}\n Max = {max_value}")
             self.plot_histogram(roll_expression, advantage=self.advantage, disadvantage=self.disadvantage)
         except ValueError as e:
             self.output_text.clear()
